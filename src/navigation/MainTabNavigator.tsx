@@ -1,24 +1,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { MainTabsParamList } from './types';
 import { HomeNavigator } from './HomeNavigator';
 import { TimelineNavigator } from './TimelineNavigator';
 import { PlannerNavigator } from './PlannerNavigator';
 import { SettingsNavigator } from './SettingsNavigator';
-import { Text, StyleSheet } from 'react-native';
 
 const Tab = createBottomTabNavigator<MainTabsParamList>();
-
-function TabIcon({ name, focused, color }: { name: string; focused: boolean; color: string }) {
-  const icons: Record<string, string> = {
-    HomeTab: focused ? '●' : '○',
-    TimelineTab: focused ? '◆' : '◇',
-    PlannerTab: focused ? '▣' : '□',
-    SettingsTab: focused ? '⚙' : '⚙',
-  };
-  return <Text style={[styles.icon, { color }]}>{icons[name] || '○'}</Text>;
-}
 
 export function MainTabNavigator() {
   const { theme } = useTheme();
@@ -38,9 +28,21 @@ export function MainTabNavigator() {
           fontSize: 11,
           fontWeight: '500',
         },
-        tabBarIcon: ({ focused, color }) => (
-          <TabIcon name={route.name} focused={focused} color={color} />
-        ),
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = 'home-outline';
+
+          if (route.name === 'HomeTab') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'TimelineTab') {
+            iconName = focused ? 'list' : 'list-outline';
+          } else if (route.name === 'PlannerTab') {
+            iconName = focused ? 'calendar' : 'calendar-outline';
+          } else if (route.name === 'SettingsTab') {
+            iconName = focused ? 'settings' : 'settings-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
       })}
     >
       <Tab.Screen
@@ -66,10 +68,3 @@ export function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  icon: {
-    fontSize: 18,
-    marginBottom: -2,
-  },
-});

@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { getDatabase } from './database';
 import { StarterEvent, EventType } from '../models/types';
 
@@ -17,7 +17,7 @@ export interface CreateEventInput {
 
 export async function createEvent(input: CreateEventInput): Promise<StarterEvent> {
   const db = await getDatabase();
-  const id = uuidv4();
+  const id = Crypto.randomUUID();
   const timestamp = input.timestamp ?? new Date().toISOString();
 
   const event: StarterEvent = {

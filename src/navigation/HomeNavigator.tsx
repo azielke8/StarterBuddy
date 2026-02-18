@@ -29,7 +29,10 @@ export function HomeNavigator() {
       <Stack.Screen
         name="HomeScreen"
         component={HomeScreen}
-        options={{ headerShown: false }}
+        options={{
+          title: 'StarterBuddy',
+          headerTitleAlign: 'center',
+        }}
       />
       <Stack.Screen
         name="StarterDetail"

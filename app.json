@@ -36,9 +36,12 @@
       [
         "react-native-google-mobile-ads",
         {
-          "iosAppId": "ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY"
+          "iosAppId": "ca-app-pub-8297854143810721~1912218863"
         }
       ]
-    ]
+    ],
+    "android": {
+      "package": "com.starterbuddy.app"
+    }
   }
 }

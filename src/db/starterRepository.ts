@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { getDatabase } from './database';
 import { Starter, StorageMode } from '../models/types';
 
@@ -30,7 +30,7 @@ export interface UpdateStarterInput {
 export async function createStarter(input: CreateStarterInput): Promise<Starter> {
   const db = await getDatabase();
   const now = new Date().toISOString();
-  const id = uuidv4();
+  const id = Crypto.randomUUID();
 
   const starter: Starter = {
     id,

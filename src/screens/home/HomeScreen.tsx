@@ -1,9 +1,10 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Text, Animated } from 'react-native';
+import React, { useCallback, useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Animated, Pressable, Text } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../theme';
-import { Heading, Subheading, Body, Caption } from '../../components/Typography';
+import { Heading, Body, Caption } from '../../components/Typography';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Banner } from '../../components/Banner';
@@ -114,25 +115,24 @@ export function HomeScreen({ navigation }: Props) {
 
   const isSingle = starters.length === 1;
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={handleAddStarter} style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+          <Ionicons name="add-circle-outline" size={26} color={theme.colors.primary} />
+        </Pressable>
+      ),
+    });
+  }, [navigation, theme.colors.primary, starters.length, isPro]);
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.contentContainer}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerCenter}>
-          <Heading style={{ fontSize: 28, textAlign: 'center' }}>StarterBuddy</Heading>
-          <Subheading style={{ textAlign: 'center', marginTop: 2 }}>Your cultures</Subheading>
-        </View>
-        <TouchableOpacity
-          style={[styles.addButton, { borderColor: theme.colors.primary }]}
-          onPress={handleAddStarter}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.addButtonText, { color: theme.colors.primary }]}>+</Text>
-        </TouchableOpacity>
-      </View>
+      <Caption style={{ textAlign: 'center', marginTop: 6, marginBottom: 4, color: theme.colors.textMuted ?? theme.colors.textSecondary }}>
+        Your cultures
+      </Caption>
 
       {/* Peak banners */}
       {starters
@@ -257,34 +257,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 16,
-    paddingBottom: 8,
-    paddingHorizontal: 16,
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  addButton: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    fontSize: 22,
-    fontWeight: '300',
-    marginTop: -1,
   },
   cardHeader: {
     flexDirection: 'row',
