@@ -1,7 +1,5 @@
 import React from 'react';
-import { Pressable } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { HomeStackParamList } from './types';
 import { HomeScreen } from '../screens/home/HomeScreen';
@@ -11,11 +9,11 @@ import { ConfirmPeakScreen } from '../screens/home/ConfirmPeakScreen';
 import { EditStarterScreen } from '../screens/home/EditStarterScreen';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { getStarterCount } from '../db';
+import { HeaderIconButton } from '../components/nav/HeaderIconButton';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 function HomeHeaderAddButton({ navigation }: { navigation: any }) {
-  const { theme } = useTheme();
   const { isPro } = useSubscription();
 
   const handlePress = async () => {
@@ -38,9 +36,12 @@ function HomeHeaderAddButton({ navigation }: { navigation: any }) {
   };
 
   return (
-    <Pressable onPress={() => void handlePress()} style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-      <Ionicons name="add-circle-outline" size={26} color={theme.colors.primary} />
-    </Pressable>
+    <HeaderIconButton
+      onPress={() => void handlePress()}
+      iconName="add"
+      accessibilityLabel="Add culture"
+      variant="bubble"
+    />
   );
 }
 
@@ -51,7 +52,7 @@ export function HomeNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.background },
-        headerTintColor: theme.colors.primary,
+        headerTintColor: theme.colors.text,
         headerTitleStyle: {
           fontFamily: theme.typography.headingFamily,
           color: theme.colors.text,

@@ -19,7 +19,7 @@ export function SettingsNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.background },
-        headerTintColor: theme.colors.primary,
+        headerTintColor: theme.colors.text,
         headerTitleStyle: {
           fontFamily: theme.typography.headingFamily,
           color: theme.colors.text,
