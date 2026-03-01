@@ -1,5 +1,5 @@
-import React, { useCallback, useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Animated, Pressable, Alert, Platform } from 'react-native';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Animated, Alert, Platform } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -164,14 +164,6 @@ export function HomeScreen({ navigation }: Props) {
       adOpacity.setValue(0);
     }
   }, [isPro, adUnitId, adOpacity]);
-
-  function handleAddStarter() {
-    if (!isPro && starters.length >= 1) {
-      openLockedCulturePaywall('home_add_starter');
-      return;
-    }
-    navigation.navigate('EditStarter', { mode: 'create' });
-  }
 
   function handleChillStarter(starter: StarterWithFeed) {
     if (isStarterLockedById(starter.id)) return;
@@ -343,16 +335,6 @@ export function HomeScreen({ navigation }: Props) {
   }
 
   const isSingle = starters.length === 1;
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable onPress={handleAddStarter} style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-          <Ionicons name="add-circle-outline" size={26} color={theme.colors.primary} />
-        </Pressable>
-      ),
-    });
-  }, [navigation, theme.colors.primary, starters.length, isPro]);
 
   return (
     <ScrollView

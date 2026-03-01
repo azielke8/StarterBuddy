@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTheme } from '../../theme';
-import { Heading, Label } from '../../components/Typography';
+import { Heading, Label, Caption } from '../../components/Typography';
 import { Button } from '../../components/Button';
 import { Banner } from '../../components/Banner';
 import { TextInput } from '../../components/TextInput';
@@ -12,8 +12,24 @@ import { useSubscription } from '../../contexts/SubscriptionContext';
 import { Starter, StorageMode } from '../../models/types';
 import { HomeStackParamList } from '../../navigation/types';
 import { ensureActiveStarterId } from '../../utils/activeStarter';
+import { normalizeHexColor } from '../../utils/colors';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'EditStarter'>;
+
+const PRESET_COLORS = [
+  '#E57373',
+  '#F06292',
+  '#BA68C8',
+  '#7986CB',
+  '#64B5F6',
+  '#4DB6AC',
+  '#81C784',
+  '#FFD54F',
+  '#FFB74D',
+  '#A1887F',
+  '#90A4AE',
+  '#D4AF37',
+];
 
 export function EditStarterScreen({ navigation, route }: Props) {
   const { theme } = useTheme();
@@ -29,6 +45,9 @@ export function EditStarterScreen({ navigation, route }: Props) {
   const [ratioB, setRatioB] = useState('3');
   const [ratioC, setRatioC] = useState('3');
   const [interval, setInterval] = useState('12');
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [customColor, setCustomColor] = useState('');
+  const [colorError, setColorError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeStarterId, setActiveStarterIdState] = useState<string | null>(null);
   const [starterCount, setStarterCount] = useState(0);
@@ -38,6 +57,13 @@ export function EditStarterScreen({ navigation, route }: Props) {
       return fallback;
     }
     return String(value);
+  }
+
+  function normalizeColorInput(value: string): string | null {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) return null;
+    const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+    return normalizeHexColor(withHash);
   }
 
   useEffect(() => {
@@ -59,6 +85,10 @@ export function EditStarterScreen({ navigation, route }: Props) {
           setRatioB(ratioValue(s.preferred_ratio_b, '3'));
           setRatioC(ratioValue(s.preferred_ratio_c, '3'));
           setInterval(String(s.default_feed_interval_hours));
+          const normalized = normalizeHexColor(s.color ?? null);
+          setSelectedColor(normalized);
+          setCustomColor(normalized ?? '');
+          setColorError(null);
         }
       });
     }
@@ -66,12 +96,19 @@ export function EditStarterScreen({ navigation, route }: Props) {
 
   async function handleSave() {
     if (isLocked) return;
+    const normalizedCustom = normalizeColorInput(customColor);
+    const finalColor = customColor.trim().length > 0 ? normalizedCustom : selectedColor;
+    if (customColor.trim().length > 0 && !normalizedCustom) {
+      setColorError('Enter a valid hex color like #FFAA00');
+      return;
+    }
     setSaving(true);
     const storageMode: StorageMode = storageIndex === 0 ? 'counter' : 'fridge';
     try {
       if (isEdit && starterId) {
         await updateStarter(starterId, {
           name,
+          color: finalColor ?? null,
           flour_type: flourType,
           hydration_target: parseInt(hydration, 10) || 100,
           storage_mode: storageMode,
@@ -83,6 +120,7 @@ export function EditStarterScreen({ navigation, route }: Props) {
       } else {
         await createStarter({
           name,
+          color: finalColor ?? null,
           flour_type: flourType,
           hydration_target: parseInt(hydration, 10) || 100,
           storage_mode: storageMode,
@@ -189,6 +227,81 @@ export function EditStarterScreen({ navigation, route }: Props) {
           </View>
         </View>
 
+        <View style={styles.colorSection}>
+          <Label style={{ marginBottom: 8 }}>Color</Label>
+          <View style={styles.colorPreviewRow}>
+            <View
+              style={[
+                styles.colorPreview,
+                {
+                  borderColor: theme.colors.border,
+                  backgroundColor: (customColor.trim().length > 0
+                    ? normalizeColorInput(customColor)
+                    : selectedColor) ?? 'transparent',
+                },
+              ]}
+            />
+            <Caption style={{ color: theme.colors.textSecondary }}>
+              {(customColor.trim().length > 0 ? normalizeColorInput(customColor) : selectedColor) ??
+                'No color selected'}
+            </Caption>
+          </View>
+          <View style={styles.paletteRow}>
+            {PRESET_COLORS.map((color) => {
+              const isSelected = selectedColor === color && customColor.trim().length === 0;
+              return (
+                <TouchableOpacity
+                  key={color}
+                  style={[
+                    styles.colorSwatch,
+                    {
+                      backgroundColor: color,
+                      borderColor: isSelected ? theme.colors.primary : theme.colors.border,
+                    },
+                  ]}
+                  onPress={() => {
+                    setSelectedColor(color);
+                    setCustomColor('');
+                    setColorError(null);
+                  }}
+                />
+              );
+            })}
+            <TouchableOpacity
+              style={[styles.clearColorButton, { borderColor: theme.colors.border }]}
+              onPress={() => {
+                setSelectedColor(null);
+                setCustomColor('');
+                setColorError(null);
+              }}
+            >
+              <Caption style={{ color: theme.colors.textSecondary }}>Clear</Caption>
+            </TouchableOpacity>
+          </View>
+          <TextInput
+            label="Custom"
+            value={customColor}
+            onChangeText={(text) => {
+              setCustomColor(text);
+              const normalized = normalizeColorInput(text);
+              if (text.trim().length === 0) {
+                setColorError(null);
+                return;
+              }
+              if (!normalized) {
+                setColorError('Enter a valid hex color like #FFAA00');
+                return;
+              }
+              setColorError(null);
+              setSelectedColor(normalized);
+            }}
+            placeholder="#FFAA00"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            error={colorError ?? undefined}
+          />
+        </View>
+
         <TextInput
           label="Feed interval"
           suffix="hours"
@@ -201,7 +314,7 @@ export function EditStarterScreen({ navigation, route }: Props) {
           title={isEdit ? 'Save Changes' : 'Create Culture'}
           onPress={handleSave}
           loading={saving}
-          disabled={name.trim().length === 0 || isLocked}
+          disabled={name.trim().length === 0 || isLocked || (customColor.trim().length > 0 && !!colorError)}
           style={{ marginTop: 16 }}
         />
       </ScrollView>
@@ -223,5 +336,40 @@ const styles = StyleSheet.create({
   },
   ratioInputWrap: {
     flex: 1,
+  },
+  colorSection: {
+    marginTop: 4,
+  },
+  colorPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 10,
+  },
+  colorPreview: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  paletteRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  colorSwatch: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+  },
+  clearColorButton: {
+    minHeight: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

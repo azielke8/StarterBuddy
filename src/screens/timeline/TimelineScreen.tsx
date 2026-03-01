@@ -15,10 +15,11 @@ import {
   ROW_PAD_Y_COMPACT,
 } from '../../theme/spacing';
 import { formatTimelineNotes } from '../../utils/timelineFormat';
+import { getStarterColor } from '../../utils/starterColor';
 
 interface TimelineSection {
   title: string;
-  data: (StarterEvent & { starterName?: string })[];
+  data: (StarterEvent & { starterName?: string; starterColor?: string | null })[];
 }
 
 export function TimelineScreen() {
@@ -28,18 +29,23 @@ export function TimelineScreen() {
 
   const loadTimeline = useCallback(async () => {
     const starters = await getAllStarters();
-    const starterMap = new Map(starters.map((s) => [s.id, s.name]));
+    const starterMap = new Map(starters.map((s) => [s.id, { name: s.name, color: getStarterColor(s) }]));
     const events = await getAllEvents();
 
     // Group by date
-    const grouped = new Map<string, (StarterEvent & { starterName?: string })[]>();
+    const grouped = new Map<string, (StarterEvent & { starterName?: string; starterColor?: string | null })[]>();
     for (const event of events) {
       const date = new Date(event.timestamp).toLocaleDateString('en-US', {
         weekday: 'long',
         month: 'long',
         day: 'numeric',
       });
-      const enriched = { ...event, starterName: starterMap.get(event.starter_id) };
+      const starterInfo = starterMap.get(event.starter_id);
+      const enriched = {
+        ...event,
+        starterName: starterInfo?.name,
+        starterColor: starterInfo?.color ?? null,
+      };
       if (!grouped.has(date)) {
         grouped.set(date, []);
       }
@@ -142,37 +148,51 @@ export function TimelineScreen() {
                   padding: CARD_PAD_COMPACT,
                 }}
               >
-                <View style={styles.eventRow}>
-                  <View style={{ flex: 1 }}>
-                    <Body style={{ fontWeight: '600' }}>
-                      {getEventIcon(item.type)}
-                      {item.starterName ? ` — ${item.starterName}` : ''}
-                    </Body>
-                    <Caption>
-                      {new Date(item.timestamp).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </Caption>
+                <View style={styles.eventContainer}>
+                  <View style={styles.markerGutter}>
+                    {item.starterColor ? (
+                      <View style={[styles.markerBar, { backgroundColor: item.starterColor }]} />
+                    ) : null}
                   </View>
-                  {item.ratio_string && (
-                    <Body style={{ color: theme.colors.textSecondary }}>{item.ratio_string}</Body>
-                  )}
+                  <View style={styles.rowContent}>
+                    <View style={styles.eventRow}>
+                      <View style={{ flex: 1 }}>
+                        <View style={styles.nameRow}>
+                          {item.starterColor ? (
+                            <View style={[styles.colorDot, { backgroundColor: item.starterColor }]} />
+                          ) : null}
+                          <Body style={{ fontWeight: '600' }}>
+                            {getEventIcon(item.type)}
+                            {item.starterName ? ` — ${item.starterName}` : ''}
+                          </Body>
+                        </View>
+                        <Caption>
+                          {new Date(item.timestamp).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </Caption>
+                      </View>
+                      {item.ratio_string && (
+                        <Body style={{ color: theme.colors.textSecondary }}>{item.ratio_string}</Body>
+                      )}
+                    </View>
+                    {formatted?.systemSummary && (
+                      <Caption style={{ marginTop: 4, color: theme.colors.textMuted ?? theme.colors.textSecondary }}>
+                        {formatted.systemSummary}
+                      </Caption>
+                    )}
+                    {formatted && formatted.displayNotes.length > 0 && (
+                      <Caption style={{ marginTop: 6 }}>{formatted.displayNotes}</Caption>
+                    )}
+                    {item.peak_confirmed_hours != null &&
+                      !(formatted?.systemSummary && hasSystemMetadataPrefix) && (
+                      <Caption style={{ marginTop: 4, color: theme.colors.success }}>
+                        Peak confirmed at {item.peak_confirmed_hours}h
+                      </Caption>
+                    )}
+                  </View>
                 </View>
-                {formatted?.systemSummary && (
-                  <Caption style={{ marginTop: 4, color: theme.colors.textMuted ?? theme.colors.textSecondary }}>
-                    {formatted.systemSummary}
-                  </Caption>
-                )}
-                {formatted && formatted.displayNotes.length > 0 && (
-                  <Caption style={{ marginTop: 6 }}>{formatted.displayNotes}</Caption>
-                )}
-                {item.peak_confirmed_hours != null &&
-                  !(formatted?.systemSummary && hasSystemMetadataPrefix) && (
-                  <Caption style={{ marginTop: 4, color: theme.colors.success }}>
-                    Peak confirmed at {item.peak_confirmed_hours}h
-                  </Caption>
-                )}
               </Card>
             </TouchableOpacity>
           );
@@ -207,6 +227,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: ROW_PAD_Y_COMPACT,
+  },
+  eventContainer: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  markerGutter: {
+    width: 10,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  markerBar: {
+    width: 5,
+    borderRadius: 3,
+    flex: 1,
+  },
+  rowContent: {
+    flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  colorDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
   },
   empty: {
     paddingTop: 60,

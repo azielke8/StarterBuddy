@@ -22,10 +22,10 @@ function AppContent() {
         colors: {
           primary: theme.colors.primary,
           background: theme.colors.background,
-          card: theme.colors.card,
+          card: theme.colors.background,
           text: theme.colors.text,
           border: theme.colors.border,
-          notification: theme.colors.accent,
+          notification: theme.colors.primary,
         },
         fonts: {
           regular: { fontFamily: 'System', fontWeight: '400' },

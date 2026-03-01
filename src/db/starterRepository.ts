@@ -4,6 +4,7 @@ import { Starter, StorageMode } from '../models/types';
 
 export interface CreateStarterInput {
   name: string;
+  color?: string | null;
   photo_uri?: string | null;
   flour_type?: string;
   hydration_target?: number;
@@ -16,6 +17,7 @@ export interface CreateStarterInput {
 
 export interface UpdateStarterInput {
   name?: string;
+  color?: string | null;
   photo_uri?: string | null;
   flour_type?: string;
   hydration_target?: number;
@@ -35,6 +37,7 @@ export async function createStarter(input: CreateStarterInput): Promise<Starter>
   const starter: Starter = {
     id,
     name: input.name,
+    color: input.color ?? null,
     photo_uri: input.photo_uri ?? null,
     flour_type: input.flour_type ?? 'All-purpose',
     hydration_target: input.hydration_target ?? 100,
@@ -49,12 +52,12 @@ export async function createStarter(input: CreateStarterInput): Promise<Starter>
   };
 
   await db.runAsync(
-    `INSERT INTO starters (id, name, photo_uri, flour_type, hydration_target, storage_mode,
+    `INSERT INTO starters (id, name, color, photo_uri, flour_type, hydration_target, storage_mode,
       preferred_ratio_a, preferred_ratio_b, preferred_ratio_c,
       default_feed_interval_hours, baseline_peak_hours, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      starter.id, starter.name, starter.photo_uri, starter.flour_type,
+      starter.id, starter.name, starter.color ?? null, starter.photo_uri, starter.flour_type,
       starter.hydration_target, starter.storage_mode,
       starter.preferred_ratio_a, starter.preferred_ratio_b, starter.preferred_ratio_c,
       starter.default_feed_interval_hours, starter.baseline_peak_hours,

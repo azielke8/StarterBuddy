@@ -24,7 +24,11 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
   );
   const currentVersion = versionRow?.version ?? 0;
 
-  const migrations: Array<{ version: number; sql: string }> = [
+  const migrations: Array<{
+    version: number;
+    sql?: string;
+    run?: (db: SQLite.SQLiteDatabase) => Promise<void>;
+  }> = [
     {
       version: 1,
       sql: `
@@ -63,11 +67,27 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
           ON events(starter_id, timestamp DESC);
       `,
     },
+    {
+      version: 2,
+      run: async (db) => {
+        const columns = await db.getAllAsync<{ name: string }>(
+          `PRAGMA table_info(starters)`
+        );
+        const hasColor = columns.some((column) => column.name === 'color');
+        if (!hasColor) {
+          await db.execAsync(`ALTER TABLE starters ADD COLUMN color TEXT;`);
+        }
+      },
+    },
   ];
 
   for (const migration of migrations) {
     if (migration.version > currentVersion) {
-      await database.execAsync(migration.sql);
+      if (migration.run) {
+        await migration.run(database);
+      } else if (migration.sql) {
+        await database.execAsync(migration.sql);
+      }
       await database.runAsync(
         'INSERT INTO schema_version (version) VALUES (?)',
         [migration.version]

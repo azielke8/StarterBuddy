@@ -4,6 +4,7 @@ export type EventType = 'FEED' | 'BAKE' | 'DISCARD' | 'NOTE';
 export interface Starter {
   id: string;
   name: string;
+  color?: string | null;
   photo_uri: string | null;
   flour_type: string;
   hydration_target: number;
