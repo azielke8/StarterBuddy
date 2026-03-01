@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme';
-import { Heading, Body, Caption } from '../../components/Typography';
+import { Body, Caption } from '../../components/Typography';
 import { Card } from '../../components/Card';
 import {
   getNotificationPermissionStatus,
@@ -28,8 +28,6 @@ export function NotificationsSettingsScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <Heading style={{ marginBottom: 24 }}>Notifications</Heading>
-
       <Card style={{ marginHorizontal: 0, marginBottom: 16 }}>
         <View style={styles.row}>
           <View style={{ flex: 1 }}>

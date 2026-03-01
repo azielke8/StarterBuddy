@@ -18,7 +18,7 @@ export function WelcomeScreen({ navigation }: Props) {
           StarterBuddy
         </Heading>
         <Subheading style={{ textAlign: 'center', lineHeight: 22, marginBottom: 48 }}>
-          Track your sourdough cultures{'\n'}with intention and care.
+          Track your sourdough cultures{'\n'}with intention.
         </Subheading>
       </View>
       <View style={styles.footer}>

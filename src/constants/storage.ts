@@ -1,0 +1,1 @@
+export const FRIDGE_INTERVAL_HOURS = 168;

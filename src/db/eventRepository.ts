@@ -1,6 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import { getDatabase } from './database';
 import { StarterEvent, EventType } from '../models/types';
+import { parseLevainStartReadyBy } from '../utils/levainPlanner';
 
 export interface CreateEventInput {
   starter_id: string;
@@ -84,6 +85,75 @@ export async function updateEventPeak(eventId: string, peakHours: number): Promi
     'UPDATE events SET peak_confirmed_hours = ? WHERE id = ?',
     [peakHours, eventId]
   );
+}
+
+export async function getMostRecentLevainStartEvent(
+  starterId: string
+): Promise<{ timestamp: string; notes: string | null } | null> {
+  const db = await getDatabase();
+  return db.getFirstAsync<{ timestamp: string; notes: string | null }>(
+    `SELECT timestamp, notes
+     FROM events
+     WHERE starter_id = ?
+       AND type = 'NOTE'
+       AND notes LIKE 'LEV_START|%'
+     ORDER BY timestamp DESC
+     LIMIT 1`,
+    [starterId]
+  );
+}
+
+export async function getActiveLevainSession(
+  starterId: string
+): Promise<{ starter_id: string; startAt: Date; readyBy: Date } | null> {
+  const db = await getDatabase();
+  const latestStart = await db.getFirstAsync<{ timestamp: string; notes: string | null }>(
+    `SELECT timestamp, notes
+     FROM events
+     WHERE starter_id = ?
+       AND type = 'NOTE'
+       AND notes LIKE 'LEV_START|%'
+     ORDER BY timestamp DESC
+     LIMIT 1`,
+    [starterId]
+  );
+
+  if (!latestStart) return null;
+  const parsedStart = parseLevainStartReadyBy(latestStart.notes);
+  if (!parsedStart) return null;
+
+  const latestEnd = await db.getFirstAsync<{ timestamp: string; notes: string | null }>(
+    `SELECT timestamp, notes
+     FROM events
+     WHERE starter_id = ?
+       AND type = 'NOTE'
+       AND notes LIKE 'LEV_END|%'
+     ORDER BY timestamp DESC
+     LIMIT 1`,
+    [starterId]
+  );
+
+  if (!latestEnd) {
+    return { starter_id: starterId, ...parsedStart };
+  }
+
+  const endLine = latestEnd.notes?.split('\n')[0] ?? '';
+  const endParts = endLine.split('|');
+  if (endParts.length >= 4 && endParts[0] === 'LEV_END' && endParts[2] === 'START') {
+    const endedStartIso = endParts[3];
+    if (endedStartIso === parsedStart.startAt.toISOString()) {
+      return null;
+    }
+    return { starter_id: starterId, ...parsedStart };
+  }
+
+  const endTs = new Date(latestEnd.timestamp).getTime();
+  const startTs = new Date(latestStart.timestamp).getTime();
+  if (Number.isNaN(endTs) || Number.isNaN(startTs)) {
+    return { starter_id: starterId, ...parsedStart };
+  }
+
+  return endTs < startTs ? { starter_id: starterId, ...parsedStart } : null;
 }
 
 export async function getAllEvents(): Promise<StarterEvent[]> {

@@ -24,7 +24,7 @@ export function SetHomeScreen({ navigation, route }: Props) {
       <View style={styles.content}>
         <Heading style={{ marginBottom: 8 }}>Where does it live?</Heading>
         <Subheading style={{ marginBottom: 32 }}>
-          Counter cultures need more frequent feedings.
+          This determines how often it needs refreshment.
         </Subheading>
         <SegmentedControl
           options={STORAGE_OPTIONS}

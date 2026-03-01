@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import Purchases, { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-const REVENUECAT_API_KEY_IOS = 'YOUR_REVENUECAT_IOS_API_KEY';
 const ENTITLEMENT_ID = 'bakers_table';
 
 interface SubscriptionContextValue {
@@ -32,9 +32,35 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     async function init() {
       try {
-        if (Platform.OS === 'ios') {
-          Purchases.configure({ apiKey: REVENUECAT_API_KEY_IOS });
+        const extra = Constants.expoConfig?.extra as
+          | {
+              revenuecat?: {
+                iosPublicSdkKey?: string;
+                androidPublicSdkKey?: string;
+              };
+            }
+          | undefined;
+
+        const iosKey = extra?.revenuecat?.iosPublicSdkKey;
+        const androidKey = extra?.revenuecat?.androidPublicSdkKey;
+        const platformKey = Platform.OS === 'ios' ? iosKey : androidKey;
+        const keyMissing =
+          !platformKey ||
+          platformKey.includes('REPLACE_ME') ||
+          platformKey.startsWith('test_');
+
+        if (keyMissing) {
+          if (__DEV__) {
+            console.warn(
+              `RevenueCat ${Platform.OS} key missing. Replace via EAS secrets or app config before release.`
+            );
+          }
+          setIsPro(false);
+          setInitialized(true);
+          return;
         }
+
+        Purchases.configure({ apiKey: platformKey });
         const customerInfo = await Purchases.getCustomerInfo();
         checkEntitlement(customerInfo);
 

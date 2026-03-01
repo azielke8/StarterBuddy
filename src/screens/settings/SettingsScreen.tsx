@@ -2,7 +2,7 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTheme } from '../../theme';
-import { Heading, Body, Caption } from '../../components/Typography';
+import { Body, Caption } from '../../components/Typography';
 import { Card } from '../../components/Card';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { SettingsStackParamList } from '../../navigation/types';
@@ -18,6 +18,7 @@ interface SettingsRow {
 
 const ROWS: SettingsRow[] = [
   { title: 'Notifications', subtitle: 'Feed reminders and peak alerts', screen: 'NotificationsSettings' },
+  { title: 'Analytics (Pro)', subtitle: 'Peak trend + best ratios + consistency insights', screen: 'Analytics' },
   { title: 'Appearance', subtitle: 'Dark Mode (Pro)', screen: 'Appearance', proOnly: false },
   { title: 'Export & Import', subtitle: 'Back up your data', screen: 'ExportImport' },
   { title: 'Subscription', subtitle: 'Manage your plan', screen: 'Subscription' },
@@ -33,8 +34,6 @@ export function SettingsScreen({ navigation }: Props) {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <Heading style={{ marginBottom: 24 }}>Settings</Heading>
-
       {!isPro && (
         <TouchableOpacity
           activeOpacity={0.8}

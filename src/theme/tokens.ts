@@ -7,6 +7,7 @@ export interface ThemeColors {
   danger: string;
   text: string;
   textSecondary: string;
+  textMuted?: string;
   textInverse: string;
   border: string;
   shadow: string;

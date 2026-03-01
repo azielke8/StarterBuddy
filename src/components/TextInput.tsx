@@ -16,6 +16,7 @@ interface TextInputProps extends RNTextInputProps {
 
 export function TextInput({ label, suffix, error, style, ...rest }: TextInputProps) {
   const { theme } = useTheme();
+  const [isFocused, setIsFocused] = React.useState(false);
 
   return (
     <View style={styles.container}>
@@ -28,7 +29,11 @@ export function TextInput({ label, suffix, error, style, ...rest }: TextInputPro
           {
             backgroundColor: theme.colors.inputBackground,
             borderRadius: theme.radii.sm,
-            borderColor: error ? theme.colors.danger : theme.colors.border,
+            borderColor: error
+              ? theme.colors.danger
+              : isFocused
+              ? theme.colors.primary
+              : theme.colors.border,
           },
         ]}
       >
@@ -38,7 +43,15 @@ export function TextInput({ label, suffix, error, style, ...rest }: TextInputPro
             { color: theme.colors.text },
             style,
           ]}
-          placeholderTextColor={theme.colors.textSecondary}
+          placeholderTextColor={theme.colors.textMuted ?? theme.colors.textSecondary}
+          onFocus={(event) => {
+            setIsFocused(true);
+            rest.onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setIsFocused(false);
+            rest.onBlur?.(event);
+          }}
           {...rest}
         />
         {suffix && (

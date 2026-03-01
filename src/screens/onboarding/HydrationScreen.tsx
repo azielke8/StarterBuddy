@@ -25,7 +25,7 @@ export function HydrationScreen({ navigation, route }: Props) {
       <View style={styles.content}>
         <Heading style={{ marginBottom: 8 }}>Target hydration</Heading>
         <Subheading style={{ marginBottom: 32 }}>
-          Most starters are maintained at 100%.
+          Hydration shapes texture and fermentation speed.
         </Subheading>
         <TextInput
           label="Hydration"

@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, Switch } from 'react-native';
+import { View, ScrollView, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme';
-import { Heading, Body, Caption } from '../../components/Typography';
+import { Body, Caption } from '../../components/Typography';
 import { Card } from '../../components/Card';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useNavigation } from '@react-navigation/native';
@@ -24,8 +24,6 @@ export function AppearanceScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <Heading style={{ marginBottom: 24 }}>Appearance</Heading>
-
       <Card style={{ marginHorizontal: 0 }}>
         <View style={styles.row}>
           <View style={{ flex: 1 }}>
@@ -36,12 +34,17 @@ export function AppearanceScreen() {
               </Caption>
             )}
           </View>
-          <Switch
-            value={isDark}
-            onValueChange={handleToggleDarkMode}
-            trackColor={{ true: theme.colors.success, false: theme.colors.border }}
-            disabled={!isPro}
-          />
+          {isPro ? (
+            <Switch
+              value={isDark}
+              onValueChange={handleToggleDarkMode}
+              trackColor={{ true: theme.colors.success, false: theme.colors.border }}
+            />
+          ) : (
+            <TouchableOpacity onPress={() => navigation.navigate('Subscription')}>
+              <Caption style={{ color: theme.colors.primary, fontWeight: '600' }}>Upgrade</Caption>
+            </TouchableOpacity>
+          )}
         </View>
       </Card>
     </ScrollView>

@@ -51,14 +51,23 @@ export function calculateFeed(
   ratioC: number,
   baselinePeakHours?: number | null
 ): FeedCalculation {
-  const totalParts = ratioA + ratioB + ratioC;
-  const starterPart = ratioA / totalParts;
-  const flourPart = ratioB / totalParts;
-  const waterPart = ratioC / totalParts;
+  const safeTotal = Math.max(0, Math.round(desiredTotal));
+  const safeA = Math.max(1, ratioA || 1);
+  const safeB = Math.max(1, ratioB || 1);
+  const hydrationDecimal = Math.max(0, hydrationPercent || 0) / 100;
 
-  const starter_g = Math.round(desiredTotal * starterPart);
-  const flour_g = Math.round(desiredTotal * flourPart);
-  const water_g = Math.round(desiredTotal * waterPart);
+  // Keep final amount authoritative; hydration determines flour/water split.
+  const starterDenominator = safeA + safeB + safeB * hydrationDecimal;
+  const starter_g = starterDenominator > 0
+    ? Math.max(0, Math.round(safeTotal * (safeA / starterDenominator)))
+    : 0;
+
+  const totalNonStarter = Math.max(0, safeTotal - starter_g);
+  const flour_g = Math.max(
+    0,
+    Math.round(totalNonStarter / (1 + hydrationDecimal))
+  );
+  const water_g = Math.max(0, Math.round(flour_g * hydrationDecimal));
 
   const ratio_string = `${ratioA}:${ratioB}:${ratioC}`;
   const estimated_peak_hours = estimatePeakHoursFromRatio(ratioA, ratioB, baselinePeakHours);

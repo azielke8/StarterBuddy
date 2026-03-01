@@ -4,7 +4,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { useTheme } from '../../theme';
-import { Heading, Body, Caption } from '../../components/Typography';
+import { Body, Caption } from '../../components/Typography';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { getAllStarters, getAllEvents, createStarter, createEvent, deleteStarter } from '../../db';
@@ -150,8 +150,6 @@ export function ExportImportScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <Heading style={{ marginBottom: 24 }}>Export & Import</Heading>
-
       <Card style={{ marginHorizontal: 0, marginBottom: 16 }}>
         <Body style={{ marginBottom: 8 }}>Export</Body>
         <Caption style={{ marginBottom: 16, lineHeight: 18 }}>

@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { File, Paths } from 'expo-file-system';
 import { lightTheme, darkTheme, Theme } from './tokens';
+import { useSubscription } from '../contexts/SubscriptionContext';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -8,6 +10,7 @@ interface ThemeContextValue {
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
   isDark: boolean;
+  themeReady: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -15,19 +18,49 @@ const ThemeContext = createContext<ThemeContextValue>({
   mode: 'light',
   setMode: () => {},
   isDark: false,
+  themeReady: false,
 });
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>('light');
+const THEME_MODE_FILE = new File(Paths.document, 'theme-mode.txt');
 
-  const setMode = useCallback((newMode: ThemeMode) => {
-    setModeState(newMode);
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { isPro, initialized } = useSubscription();
+  const [preferredMode, setPreferredMode] = useState<ThemeMode>('light');
+  const [modeLoaded, setModeLoaded] = useState(false);
+
+  useEffect(() => {
+    async function loadPreferredMode() {
+      try {
+        const stored = (await THEME_MODE_FILE.text()).trim();
+        if (stored === 'light' || stored === 'dark') {
+          setPreferredMode(stored);
+        }
+      } catch {
+        // No saved preference yet.
+      } finally {
+        setModeLoaded(true);
+      }
+    }
+
+    void loadPreferredMode();
   }, []);
 
+  const setMode = useCallback((newMode: ThemeMode) => {
+    setPreferredMode(newMode);
+    try {
+      THEME_MODE_FILE.create({ overwrite: true });
+      THEME_MODE_FILE.write(newMode);
+    } catch {
+      // Ignore persistence failures and keep in-memory mode.
+    }
+  }, []);
+
+  const mode: ThemeMode = isPro ? preferredMode : 'light';
   const theme = mode === 'dark' ? darkTheme : lightTheme;
+  const themeReady = modeLoaded && initialized;
 
   return (
-    <ThemeContext.Provider value={{ theme, mode, setMode, isDark: mode === 'dark' }}>
+    <ThemeContext.Provider value={{ theme, mode, setMode, isDark: mode === 'dark', themeReady }}>
       {children}
     </ThemeContext.Provider>
   );

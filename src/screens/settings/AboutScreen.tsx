@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme';
-import { Heading, Body, Caption } from '../../components/Typography';
+import { Body, Caption } from '../../components/Typography';
 import { Card } from '../../components/Card';
 
 export function AboutScreen() {
@@ -12,8 +12,6 @@ export function AboutScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.content}
     >
-      <Heading style={{ marginBottom: 24 }}>About</Heading>
-
       <Card style={{ marginHorizontal: 0 }}>
         <View style={styles.row}>
           <Caption>Version</Caption>

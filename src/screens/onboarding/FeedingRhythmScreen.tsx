@@ -26,7 +26,7 @@ export function FeedingRhythmScreen({ navigation, route }: Props) {
       <View style={styles.content}>
         <Heading style={{ marginBottom: 8 }}>Feeding rhythm</Heading>
         <Subheading style={{ marginBottom: 32 }}>
-          How often do you typically refresh this culture?
+          How often do you refresh this culture?{'\n'}You can adjust anytime.
         </Subheading>
         <TextInput
           label="Interval"

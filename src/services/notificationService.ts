@@ -98,3 +98,26 @@ export async function cancelStarterNotifications(
 export async function cancelAllNotifications(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
+
+export async function scheduleOneTimeNotification(input: {
+  title: string;
+  body: string;
+  date: Date;
+  data?: Record<string, any>;
+}): Promise<string> {
+  return Notifications.scheduleNotificationAsync({
+    content: {
+      title: input.title,
+      body: input.body,
+      data: input.data ?? {},
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: input.date,
+    },
+  });
+}
+
+export async function cancelScheduledNotification(id: string): Promise<void> {
+  await Notifications.cancelScheduledNotificationAsync(id);
+}

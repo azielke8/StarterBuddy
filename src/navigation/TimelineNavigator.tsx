@@ -12,11 +12,22 @@ export function TimelineNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: false,
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.colors.primary,
+        headerTitleStyle: {
+          fontFamily: theme.typography.headingFamily,
+          color: theme.colors.text,
+        },
+        headerTitleAlign: 'center',
+        headerShadowVisible: false,
         contentStyle: { backgroundColor: theme.colors.background },
       }}
     >
-      <Stack.Screen name="TimelineMain" component={TimelineScreen} />
+      <Stack.Screen
+        name="TimelineMain"
+        component={TimelineScreen}
+        options={{ title: 'Timeline' }}
+      />
     </Stack.Navigator>
   );
 }

@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -16,12 +16,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.starterbuddy.app",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
+        "NSUserTrackingUsageDescription": "This identifier may be used to deliver ads and improve app experience.",
         "SKAdNetworkItems": [
           {
             "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork"
           }
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "plugins": [
@@ -36,10 +37,26 @@
       [
         "react-native-google-mobile-ads",
         {
-          "iosAppId": "ca-app-pub-8297854143810721~1912218863"
+          "iosAppId": "ca-app-pub-8297854143810721~1912218863",
+          "androidAppId": "ca-app-pub-REPLACE_ME~REPLACE_ME"
         }
-      ]
+      ],
+      "expo-font"
     ],
+    "extra": {
+      "_releaseNotes": "Replace via EAS secrets or app config before release",
+      "revenuecat": {
+        "iosPublicSdkKey": "appl_BvLshhWmYBJuKgAWWLxsEzdhyKL",
+        "androidPublicSdkKey": "goog_REPLACE_ME"
+      },
+      "admob": {
+        "iosBannerUnitId": "ca-app-pub-8297854143810721/4691091721",
+        "androidBannerUnitId": "ca-app-pub-REPLACE_ME"
+      },
+      "eas": {
+        "projectId": "d86ff932-3ced-46dd-8463-b01a85142524"
+      }
+    },
     "android": {
       "package": "com.starterbuddy.app"
     }

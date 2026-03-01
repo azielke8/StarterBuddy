@@ -7,11 +7,13 @@ import { HomeNavigator } from './HomeNavigator';
 import { TimelineNavigator } from './TimelineNavigator';
 import { PlannerNavigator } from './PlannerNavigator';
 import { SettingsNavigator } from './SettingsNavigator';
+import { useSubscription } from '../contexts/SubscriptionContext';
 
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 export function MainTabNavigator() {
   const { theme } = useTheme();
+  const { isPro } = useSubscription();
 
   return (
     <Tab.Navigator
@@ -59,6 +61,17 @@ export function MainTabNavigator() {
         name="PlannerTab"
         component={PlannerNavigator}
         options={{ tabBarLabel: 'Planner' }}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            if (isPro) return;
+            event.preventDefault();
+            navigation.getParent()?.navigate('ProPaywall' as any, {
+              placement: 'planner_entry',
+              title: 'Unlock levain planning',
+              message: "Levain planning is included with Baker's Table.",
+            } as any);
+          },
+        })}
       />
       <Tab.Screen
         name="SettingsTab"

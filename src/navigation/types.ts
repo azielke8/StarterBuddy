@@ -32,6 +32,7 @@ export type PlannerStackParamList = {
 
 export type SettingsStackParamList = {
   SettingsMain: undefined;
+  Analytics: undefined;
   ExportImport: undefined;
   NotificationsSettings: undefined;
   Appearance: undefined;
@@ -49,5 +50,5 @@ export type MainTabsParamList = {
 export type RootStackParamList = {
   Onboarding: undefined;
   MainTabs: undefined;
-  ProPaywall: undefined;
+  ProPaywall: { trigger?: string; title?: string; message?: string; placement?: string } | undefined;
 };

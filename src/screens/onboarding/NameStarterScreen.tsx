@@ -21,10 +21,10 @@ export function NameStarterScreen({ navigation, route }: Props) {
       <View style={styles.content}>
         <Heading style={{ marginBottom: 8 }}>Name your culture</Heading>
         <Subheading style={{ marginBottom: 32 }}>
-          Give it something meaningful.
+          Every culture deserves a name.
         </Subheading>
         <TextInput
-          placeholder="e.g., Marvin, The Elder"
+          placeholder="e.g., Alder, Wild Rye, Mother"
           value={name}
           onChangeText={setName}
           autoFocus

@@ -50,7 +50,7 @@ export function CompletionScreen({ navigation, route }: Props) {
           {name} is ready.
         </Heading>
         <Subheading style={{ textAlign: 'center', lineHeight: 22 }}>
-          Your culture has been set up.{'\n'}Time to start tracking.
+          Your culture is ready.{'\n'}Let’s begin.
         </Subheading>
       </View>
       <View style={styles.footer}>

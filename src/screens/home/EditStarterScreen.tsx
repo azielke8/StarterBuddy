@@ -4,16 +4,20 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTheme } from '../../theme';
 import { Heading, Label } from '../../components/Typography';
 import { Button } from '../../components/Button';
+import { Banner } from '../../components/Banner';
 import { TextInput } from '../../components/TextInput';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { getStarter, createStarter, updateStarter } from '../../db';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 import { Starter, StorageMode } from '../../models/types';
 import { HomeStackParamList } from '../../navigation/types';
+import { ensureActiveStarterId } from '../../utils/activeStarter';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'EditStarter'>;
 
 export function EditStarterScreen({ navigation, route }: Props) {
   const { theme } = useTheme();
+  const { isPro } = useSubscription();
   const { mode, starterId } = route.params;
   const isEdit = mode === 'edit' && starterId;
 
@@ -26,8 +30,24 @@ export function EditStarterScreen({ navigation, route }: Props) {
   const [ratioC, setRatioC] = useState('3');
   const [interval, setInterval] = useState('12');
   const [saving, setSaving] = useState(false);
+  const [activeStarterId, setActiveStarterIdState] = useState<string | null>(null);
+  const [starterCount, setStarterCount] = useState(0);
+
+  function ratioValue(value: number | null | undefined, fallback: string): string {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+      return fallback;
+    }
+    return String(value);
+  }
 
   useEffect(() => {
+    async function loadActiveStarter() {
+      const { activeStarterId: activeId, starterCount: count } = await ensureActiveStarterId(isPro);
+      setStarterCount(count);
+      setActiveStarterIdState(activeId);
+    }
+    void loadActiveStarter();
+
     if (isEdit && starterId) {
       getStarter(starterId).then((s) => {
         if (s) {
@@ -35,16 +55,17 @@ export function EditStarterScreen({ navigation, route }: Props) {
           setFlourType(s.flour_type);
           setHydration(String(s.hydration_target));
           setStorageIndex(s.storage_mode === 'fridge' ? 1 : 0);
-          setRatioA(String(s.preferred_ratio_a));
-          setRatioB(String(s.preferred_ratio_b));
-          setRatioC(String(s.preferred_ratio_c));
+          setRatioA(ratioValue(s.preferred_ratio_a, '1'));
+          setRatioB(ratioValue(s.preferred_ratio_b, '3'));
+          setRatioC(ratioValue(s.preferred_ratio_c, '3'));
           setInterval(String(s.default_feed_interval_hours));
         }
       });
     }
-  }, [isEdit, starterId]);
+  }, [isEdit, isPro, starterId]);
 
   async function handleSave() {
+    if (isLocked) return;
     setSaving(true);
     const storageMode: StorageMode = storageIndex === 0 ? 'counter' : 'fridge';
     try {
@@ -78,6 +99,13 @@ export function EditStarterScreen({ navigation, route }: Props) {
       setSaving(false);
     }
   }
+  const isLocked =
+    !isPro &&
+    starterCount > 1 &&
+    !!isEdit &&
+    !!starterId &&
+    !!activeStarterId &&
+    activeStarterId !== starterId;
 
   return (
     <KeyboardAvoidingView
@@ -89,6 +117,14 @@ export function EditStarterScreen({ navigation, route }: Props) {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        {isLocked && (
+          <Banner
+            message={"Multiple cultures are a Pro feature.\nUpgrade to unlock unlimited cultures."}
+            variant="info"
+            actionLabel="Upgrade"
+            onAction={() => navigation.getParent()?.navigate('ProPaywall' as never)}
+          />
+        )}
         <Heading style={{ marginBottom: 24 }}>
           {isEdit ? 'Edit Culture' : 'New Culture'}
         </Heading>
@@ -123,24 +159,33 @@ export function EditStarterScreen({ navigation, route }: Props) {
         <View style={{ marginTop: 20 }}>
           <Label style={{ marginBottom: 8 }}>Preferred ratio</Label>
           <View style={styles.ratioRow}>
-            <TextInput
-              value={ratioA}
-              onChangeText={setRatioA}
-              keyboardType="number-pad"
-              style={{ textAlign: 'center' }}
-            />
-            <TextInput
-              value={ratioB}
-              onChangeText={setRatioB}
-              keyboardType="number-pad"
-              style={{ textAlign: 'center' }}
-            />
-            <TextInput
-              value={ratioC}
-              onChangeText={setRatioC}
-              keyboardType="number-pad"
-              style={{ textAlign: 'center' }}
-            />
+            <View style={styles.ratioInputWrap}>
+              <TextInput
+                value={ratioA ?? '1'}
+                onChangeText={setRatioA}
+                keyboardType="number-pad"
+                editable
+                style={{ textAlign: 'center' }}
+              />
+            </View>
+            <View style={styles.ratioInputWrap}>
+              <TextInput
+                value={ratioB ?? '3'}
+                onChangeText={setRatioB}
+                keyboardType="number-pad"
+                editable
+                style={{ textAlign: 'center' }}
+              />
+            </View>
+            <View style={styles.ratioInputWrap}>
+              <TextInput
+                value={ratioC ?? '3'}
+                onChangeText={setRatioC}
+                keyboardType="number-pad"
+                editable
+                style={{ textAlign: 'center' }}
+              />
+            </View>
           </View>
         </View>
 
@@ -156,7 +201,7 @@ export function EditStarterScreen({ navigation, route }: Props) {
           title={isEdit ? 'Save Changes' : 'Create Culture'}
           onPress={handleSave}
           loading={saving}
-          disabled={name.trim().length === 0}
+          disabled={name.trim().length === 0 || isLocked}
           style={{ marginTop: 16 }}
         />
       </ScrollView>
@@ -175,5 +220,8 @@ const styles = StyleSheet.create({
   ratioRow: {
     flexDirection: 'row',
     gap: 8,
+  },
+  ratioInputWrap: {
+    flex: 1,
   },
 });
