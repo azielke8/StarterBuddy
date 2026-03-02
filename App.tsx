@@ -14,6 +14,7 @@ function AppContent() {
   const { isPro, initialized } = useSubscription();
   const navKey = mode;
   const hasLoggedThemeReadyRef = React.useRef(false);
+  const hasLoggedResolvedBeforeNavRef = React.useRef(false);
   const previousIsProRef = React.useRef<boolean | null>(null);
 
   React.useEffect(() => {
@@ -23,6 +24,13 @@ function AppContent() {
       console.log('themeReady true (subscription initialized)');
     }
   }, [themeReady, initialized]);
+
+  React.useEffect(() => {
+    if (!__DEV__) return;
+    if (!themeReady || !initialized || hasLoggedResolvedBeforeNavRef.current) return;
+    hasLoggedResolvedBeforeNavRef.current = true;
+    console.log(`resolved mode before NavigationContainer mount: ${mode}`);
+  }, [themeReady, initialized, mode]);
 
   React.useEffect(() => {
     if (!__DEV__) return;
