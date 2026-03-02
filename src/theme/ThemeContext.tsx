@@ -27,8 +27,13 @@ const THEME_MODE_FILE = new File(Paths.document, 'theme-mode.txt');
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { isPro, initialized } = useSubscription();
   const initialModeGuess: ThemeMode = Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
-  const [preferredMode, setPreferredMode] = useState<ThemeMode>(initialModeGuess);
-  const [modeLoaded, setModeLoaded] = useState(false);
+  const [themeState, setThemeState] = useState<{
+    preferredMode: ThemeMode;
+    modeLoaded: boolean;
+  }>({
+    preferredMode: initialModeGuess,
+    modeLoaded: false,
+  });
 
   useEffect(() => {
     if (__DEV__) {
@@ -47,11 +52,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       } catch {
         // No saved preference yet.
       } finally {
-        setPreferredMode(resolvedMode);
+        setThemeState({ preferredMode: resolvedMode, modeLoaded: true });
         if (__DEV__) {
           console.log(`theme stored mode loaded: ${resolvedMode}`);
+          console.log('theme modeLoaded flipped: true');
         }
-        setModeLoaded(true);
       }
     }
 
@@ -59,18 +64,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [initialModeGuess]);
 
   const setMode = useCallback((newMode: ThemeMode) => {
-    setPreferredMode(newMode);
-    try {
-      THEME_MODE_FILE.create({ overwrite: true });
-      THEME_MODE_FILE.write(newMode);
-    } catch {
-      // Ignore persistence failures and keep in-memory mode.
-    }
+    setThemeState((prev) => ({ ...prev, preferredMode: newMode }));
+    void (async () => {
+      try {
+        await THEME_MODE_FILE.create({ overwrite: true });
+        await THEME_MODE_FILE.write(newMode);
+      } catch {
+        // Ignore persistence failures and keep in-memory mode.
+      }
+    })();
   }, []);
 
-  const mode: ThemeMode = isPro ? preferredMode : 'light';
+  const mode: ThemeMode = isPro ? themeState.preferredMode : 'light';
   const theme = mode === 'dark' ? darkTheme : lightTheme;
-  const themeReady = modeLoaded && initialized;
+  const themeReady = themeState.modeLoaded && initialized;
 
   useEffect(() => {
     if (__DEV__ && themeReady) {

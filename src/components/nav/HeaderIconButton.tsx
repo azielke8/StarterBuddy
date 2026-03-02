@@ -16,7 +16,25 @@ export function HeaderIconButton({
   accessibilityLabel,
   variant = 'bubble',
 }: HeaderIconButtonProps) {
-  const { theme } = useTheme();
+  const { theme, mode } = useTheme();
+  const didLogRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!__DEV__ || didLogRef.current) return;
+    didLogRef.current = true;
+    console.log(
+      '[HeaderIconButton mount]',
+      JSON.stringify({
+        ts: Date.now(),
+        mode,
+        inputBackground: theme.colors.inputBackground,
+        background: theme.colors.background,
+        text: theme.colors.text,
+        primary: theme.colors.primary,
+        border: theme.colors.border,
+      })
+    );
+  }, [mode, theme.colors.background, theme.colors.border, theme.colors.inputBackground, theme.colors.primary, theme.colors.text]);
 
   return (
     <Pressable
