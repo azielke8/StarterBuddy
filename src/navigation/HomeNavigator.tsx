@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { useTheme } from '../theme';
 import { HomeStackParamList } from './types';
 import { HomeScreen } from '../screens/home/HomeScreen';
@@ -11,56 +11,53 @@ import { useSubscription } from '../contexts/SubscriptionContext';
 import { getStarterCount } from '../db';
 import { HeaderIconButton } from '../components/nav/HeaderIconButton';
 
-const Stack = createNativeStackNavigator<HomeStackParamList>();
-
-function HomeHeaderAddButton({ navigation }: { navigation: any }) {
-  const { isPro } = useSubscription();
-
-  const handlePress = async () => {
-    if (!isPro) {
-      const starterCount = await getStarterCount();
-      if (starterCount >= 1) {
-        navigation.getParent()?.navigate(
-          'ProPaywall' as any,
-          {
-            trigger: 'multi_culture_locked_action',
-            placement: 'home_add_starter',
-            title: 'Manage multiple cultures',
-            message: 'Pro unlocks all your cultures and lets you plan each one.',
-          } as any
-        );
-        return;
-      }
-    }
-    navigation.navigate('EditStarter', { mode: 'create' });
-  };
-
-  return (
-    <HeaderIconButton
-      onPress={() => void handlePress()}
-      iconName="add"
-      accessibilityLabel="Add culture"
-    />
-  );
-}
+const Stack = createStackNavigator<HomeStackParamList>();
 
 export function HomeNavigator() {
   const { theme } = useTheme();
+  const { isPro } = useSubscription();
 
   return (
     <Stack.Navigator
       screenOptions={({ navigation, route }) => ({
-        headerStyle: { backgroundColor: theme.colors.background },
+        headerStyle: {
+          backgroundColor: theme.colors.background,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
           fontFamily: theme.typography.headingFamily,
           color: theme.colors.text,
         },
         headerShadowVisible: false,
-        contentStyle: { backgroundColor: theme.colors.background },
+        cardStyle: { backgroundColor: theme.colors.background },
         headerRight:
           route.name === 'HomeScreen'
-            ? () => <HomeHeaderAddButton navigation={navigation} />
+            ? () => (
+                <HeaderIconButton
+                  iconName="add"
+                  accessibilityLabel="Add culture"
+                  onPress={async () => {
+                    if (!isPro) {
+                      const starterCount = await getStarterCount();
+                      if (starterCount >= 1) {
+                        navigation.getParent()?.navigate(
+                          'ProPaywall' as any,
+                          {
+                            trigger: 'multi_culture_locked_action',
+                            placement: 'home_add_starter',
+                            title: 'Manage multiple cultures',
+                            message: 'Pro unlocks all your cultures and lets you plan each one.',
+                          } as any
+                        );
+                        return;
+                      }
+                    }
+                    navigation.navigate('EditStarter', { mode: 'create' });
+                  }}
+                />
+              )
             : undefined,
       })}
     >
@@ -80,7 +77,7 @@ export function HomeNavigator() {
       <Stack.Screen
         name="FeedWizard"
         component={FeedWizardScreen}
-        options={{ title: '', headerBackTitle: 'Back' }}
+        options={{ title: '' }}
       />
       <Stack.Screen
         name="ConfirmPeak"

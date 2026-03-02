@@ -56,6 +56,7 @@ export function HeaderIconButton({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      hitSlop={8}
       style={({ pressed }) => [styles.base, pressed ? { opacity: 0.8 } : null]}
     >
       <Ionicons name={iconName} size={20} color={theme.colors.text} />
@@ -65,10 +66,11 @@ export function HeaderIconButton({
 
 const styles = StyleSheet.create({
   base: {
-    width: 34,
-    height: 34,
+    minWidth: 44,
+    minHeight: 44,
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 8,
   },
 });

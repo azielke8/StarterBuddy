@@ -26,7 +26,10 @@ const THEME_MODE_FILE = new File(Paths.document, 'theme-mode.txt');
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { isPro, initialized } = useSubscription();
-  const initialModeGuess: ThemeMode = Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+  const initialModeGuessRef = React.useRef<ThemeMode>(
+    Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
+  );
+  const initialModeGuess = initialModeGuessRef.current;
   const [themeState, setThemeState] = useState<{
     preferredMode: ThemeMode;
     modeLoaded: boolean;
@@ -39,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (__DEV__) {
       console.log(`theme initial mode guess: ${initialModeGuess}`);
     }
-  }, [initialModeGuess]);
+  }, []);
 
   useEffect(() => {
     async function loadPreferredMode() {
@@ -61,7 +64,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
 
     void loadPreferredMode();
-  }, [initialModeGuess]);
+  }, []);
 
   const setMode = useCallback((newMode: ThemeMode) => {
     setThemeState((prev) => ({ ...prev, preferredMode: newMode }));
@@ -78,12 +81,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const mode: ThemeMode = isPro ? themeState.preferredMode : 'light';
   const theme = mode === 'dark' ? darkTheme : lightTheme;
   const themeReady = themeState.modeLoaded && initialized;
+  const previousModeRef = React.useRef<ThemeMode | null>(null);
 
   useEffect(() => {
     if (__DEV__ && themeReady) {
       console.log(`theme resolved mode final: ${mode}`);
     }
   }, [mode, themeReady]);
+
+  useEffect(() => {
+    if (!__DEV__) return;
+    if (previousModeRef.current === null) {
+      previousModeRef.current = mode;
+      return;
+    }
+    if (previousModeRef.current !== mode) {
+      console.log(`theme mode transition: ${previousModeRef.current} -> ${mode}`);
+      previousModeRef.current = mode;
+    }
+  }, [mode]);
 
   return (
     <ThemeContext.Provider value={{ theme, mode, setMode, isDark: mode === 'dark', themeReady }}>

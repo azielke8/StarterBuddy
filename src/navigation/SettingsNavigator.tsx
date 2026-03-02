@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { useTheme } from '../theme';
 import { SettingsStackParamList } from './types';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
@@ -10,7 +10,7 @@ import { SubscriptionScreen } from '../screens/settings/SubscriptionScreen';
 import { AboutScreen } from '../screens/settings/AboutScreen';
 import { AnalyticsScreen } from '../screens/settings/AnalyticsScreen';
 
-const Stack = createNativeStackNavigator<SettingsStackParamList>();
+const Stack = createStackNavigator<SettingsStackParamList>();
 
 export function SettingsNavigator() {
   const { theme } = useTheme();
@@ -18,7 +18,11 @@ export function SettingsNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.background },
+        headerStyle: {
+          backgroundColor: theme.colors.background,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
           fontFamily: theme.typography.headingFamily,
@@ -26,7 +30,7 @@ export function SettingsNavigator() {
         },
         headerTitleAlign: 'center',
         headerShadowVisible: false,
-        contentStyle: { backgroundColor: theme.colors.background },
+        cardStyle: { backgroundColor: theme.colors.background },
       }}
     >
       <Stack.Screen

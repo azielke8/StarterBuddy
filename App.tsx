@@ -12,11 +12,12 @@ import { useSubscription } from './src/contexts/SubscriptionContext';
 function AppContent() {
   const { theme, isDark, themeReady, mode } = useTheme();
   const { isPro, initialized } = useSubscription();
-  const navKey = mode;
   const hasLoggedThemeReadyRef = React.useRef(false);
   const hasLoggedResolvedBeforeNavRef = React.useRef(false);
   const previousIsProRef = React.useRef<boolean | null>(null);
+  const previousModeRef = React.useRef<string | null>(null);
   const hasLoggedPlaceholderRef = React.useRef(false);
+  const navReadyCountRef = React.useRef(0);
 
   React.useEffect(() => {
     if (!__DEV__) return;
@@ -45,6 +46,28 @@ function AppContent() {
       previousIsProRef.current = isPro;
     }
   }, [initialized, isPro]);
+
+  React.useEffect(() => {
+    if (!__DEV__) return;
+    if (previousModeRef.current === null) {
+      previousModeRef.current = mode;
+      console.log(`mode initial: ${mode}`);
+      return;
+    }
+    if (previousModeRef.current !== mode) {
+      console.log(`mode changed: ${previousModeRef.current} -> ${mode}`);
+      previousModeRef.current = mode;
+    }
+  }, [mode]);
+
+  React.useEffect(() => {
+    if (!__DEV__) return;
+    if (!themeReady || !initialized) return;
+    console.log('navigation tree mounted (ready gate)');
+    return () => {
+      console.log('navigation tree unmounted (ready gate)');
+    };
+  }, [themeReady, initialized]);
 
   if (!themeReady || !initialized) {
     if (__DEV__ && !hasLoggedPlaceholderRef.current) {
@@ -75,10 +98,12 @@ function AppContent() {
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <NavigationContainer
-        key={navKey}
         onReady={() => {
           if (__DEV__) {
-            console.log(`NavigationContainer mounted (mode=${mode})`);
+            navReadyCountRef.current += 1;
+            console.log(
+              `NavigationContainer mounted (mode=${mode}, count=${navReadyCountRef.current})`
+            );
           }
         }}
         theme={{
