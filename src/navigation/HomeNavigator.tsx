@@ -40,7 +40,6 @@ function HomeHeaderAddButton({ navigation }: { navigation: any }) {
       onPress={() => void handlePress()}
       iconName="add"
       accessibilityLabel="Add culture"
-      variant="bubble"
     />
   );
 }

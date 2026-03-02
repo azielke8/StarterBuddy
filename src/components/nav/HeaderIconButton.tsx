@@ -7,17 +7,16 @@ interface HeaderIconButtonProps {
   onPress: () => void;
   iconName: keyof typeof Ionicons.glyphMap;
   accessibilityLabel?: string;
-  variant?: 'bubble';
 }
 
 export function HeaderIconButton({
   onPress,
   iconName,
   accessibilityLabel,
-  variant = 'bubble',
 }: HeaderIconButtonProps) {
   const { theme, mode } = useTheme();
   const didLogRef = React.useRef(false);
+  const previousThemeSignatureRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (!__DEV__ || didLogRef.current) return;
@@ -27,34 +26,39 @@ export function HeaderIconButton({
       JSON.stringify({
         ts: Date.now(),
         mode,
-        inputBackground: theme.colors.inputBackground,
-        background: theme.colors.background,
         text: theme.colors.text,
-        primary: theme.colors.primary,
-        border: theme.colors.border,
       })
     );
-  }, [mode, theme.colors.background, theme.colors.border, theme.colors.inputBackground, theme.colors.primary, theme.colors.text]);
+  }, [mode, theme.colors.text]);
+
+  React.useEffect(() => {
+    if (!__DEV__) return;
+    const signature = `${mode}|${theme.colors.text}`;
+    if (previousThemeSignatureRef.current === null) {
+      previousThemeSignatureRef.current = signature;
+      return;
+    }
+    if (previousThemeSignatureRef.current !== signature) {
+      previousThemeSignatureRef.current = signature;
+      console.log(
+        '[HeaderIconButton theme change]',
+        JSON.stringify({
+          ts: Date.now(),
+          mode,
+          text: theme.colors.text,
+        })
+      );
+    }
+  }, [mode, theme.colors.text]);
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      style={({ pressed }) => [
-        styles.base,
-        variant === 'bubble'
-          ? {
-              backgroundColor: theme.colors.inputBackground,
-              borderColor: theme.colors.border,
-              borderRadius: theme.radii.full,
-              borderWidth: 1,
-            }
-          : null,
-        pressed ? { opacity: 0.8 } : null,
-      ]}
+      style={({ pressed }) => [styles.base, pressed ? { opacity: 0.8 } : null]}
     >
-      <Ionicons name={iconName} size={18} color={theme.colors.primary} />
+      <Ionicons name={iconName} size={20} color={theme.colors.text} />
     </Pressable>
   );
 }
