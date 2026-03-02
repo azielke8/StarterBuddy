@@ -50,7 +50,7 @@ export function HomeNavigator() {
 
   return (
     <Stack.Navigator
-      screenOptions={{
+      screenOptions={({ navigation, route }) => ({
         headerStyle: { backgroundColor: theme.colors.background },
         headerTintColor: theme.colors.text,
         headerTitleStyle: {
@@ -59,16 +59,19 @@ export function HomeNavigator() {
         },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: theme.colors.background },
-      }}
+        headerRight:
+          route.name === 'HomeScreen'
+            ? () => <HomeHeaderAddButton navigation={navigation} />
+            : undefined,
+      })}
     >
       <Stack.Screen
         name="HomeScreen"
         component={HomeScreen}
-        options={({ navigation }) => ({
+        options={{
           title: 'StarterBuddy',
           headerTitleAlign: 'center',
-          headerRight: () => <HomeHeaderAddButton navigation={navigation} />,
-        })}
+        }}
       />
       <Stack.Screen
         name="StarterDetail"
