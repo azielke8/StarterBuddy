@@ -11,16 +11,33 @@ import { useSubscription } from './src/contexts/SubscriptionContext';
 
 function AppContent() {
   const { theme, isDark, themeReady, mode } = useTheme();
-  const { isPro } = useSubscription();
-  const navKey = `${mode}-${isPro ? 'pro' : 'free'}`;
+  const { isPro, initialized } = useSubscription();
+  const navKey = mode;
+  const hasLoggedThemeReadyRef = React.useRef(false);
+  const previousIsProRef = React.useRef<boolean | null>(null);
 
   React.useEffect(() => {
-    if (__DEV__) {
-      console.log(`NAV_KEY changed: ${navKey}`);
+    if (!__DEV__) return;
+    if (themeReady && initialized && !hasLoggedThemeReadyRef.current) {
+      hasLoggedThemeReadyRef.current = true;
+      console.log('themeReady true (subscription initialized)');
     }
-  }, [navKey]);
+  }, [themeReady, initialized]);
 
-  if (!themeReady) {
+  React.useEffect(() => {
+    if (!__DEV__) return;
+    if (!initialized) return;
+    if (previousIsProRef.current === null) {
+      previousIsProRef.current = isPro;
+      return;
+    }
+    if (previousIsProRef.current !== isPro) {
+      console.log(`isPro changed after init: ${isPro ? 'pro' : 'free'}`);
+      previousIsProRef.current = isPro;
+    }
+  }, [initialized, isPro]);
+
+  if (!themeReady || !initialized) {
     return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
   }
 
@@ -29,6 +46,11 @@ function AppContent() {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <NavigationContainer
         key={navKey}
+        onReady={() => {
+          if (__DEV__) {
+            console.log('NavigationContainer mounted');
+          }
+        }}
         theme={{
           dark: isDark,
           colors: {
