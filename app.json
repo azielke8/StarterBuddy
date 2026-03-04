@@ -16,7 +16,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.starterbuddy.app",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "This identifier may be used to deliver ads and improve app experience.",
         "SKAdNetworkItems": [
           {
             "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork"

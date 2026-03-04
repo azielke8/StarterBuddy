@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, ScrollView, StyleSheet, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, Text, Pressable, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme';
 import { Heading, Body, Caption, Subheading, Label } from '../../components/Typography';
@@ -37,6 +37,8 @@ const BENEFITS = [
   'Levain planner reminders and peak alerts',
   'Ad-free',
 ];
+const PRIVACY_URL = 'https://azielke8.github.io/starter-buddy-support/privacy.html';
+const TERMS_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 export function SubscriptionScreen() {
   const PAYWALL_VARIANT = 'v1';
@@ -272,6 +274,28 @@ export function SubscriptionScreen() {
     }
   }
 
+  async function handleOpenLegal(url: string) {
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        setFeedback({
+          message: 'Could not open link right now. Please try again.',
+          variant: 'warning',
+        });
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('Failed to open legal link:', error);
+      }
+      setFeedback({
+        message: 'Could not open link right now. Please try again.',
+        variant: 'warning',
+      });
+    }
+  }
+
   if (isPro) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -295,6 +319,20 @@ export function SubscriptionScreen() {
             disabled={restoring || loadingPackageId !== null}
             style={{ marginTop: 8 }}
           />
+          <View style={styles.finePrintSection}>
+            <Caption style={{ textAlign: 'center', color: theme.colors.textSecondary }}>
+              Subscription auto-renews until canceled.
+            </Caption>
+            <View style={styles.legalLinksRow}>
+              <Pressable onPress={() => void handleOpenLegal(TERMS_URL)}>
+                <Caption style={[styles.legalLink, { color: theme.colors.primary }]}>Terms of Use</Caption>
+              </Pressable>
+              <Caption style={{ color: theme.colors.textSecondary }}>·</Caption>
+              <Pressable onPress={() => void handleOpenLegal(PRIVACY_URL)}>
+                <Caption style={[styles.legalLink, { color: theme.colors.primary }]}>Privacy Policy</Caption>
+              </Pressable>
+            </View>
+          </View>
         </View>
       </View>
     );
@@ -594,7 +632,7 @@ export function SubscriptionScreen() {
               <View style={styles.packageRow}>
                 <View style={{ flex: 1, marginRight: 12 }}>
                   <View style={styles.planTitleRow}>
-                    <Body style={{ fontWeight: '600' }}>{getPackageLabel(selectedPackage)}</Body>
+                    <Body style={{ fontWeight: '700' }}>Baker&apos;s Table (Pro)</Body>
                     {yearlyPackage && selectedPackage.identifier === yearlyPackage.identifier && (
                       <View
                         style={[
@@ -605,16 +643,19 @@ export function SubscriptionScreen() {
                         <Caption style={{ color: theme.colors.primary }}>
                           {yearlySavingsPercent ? `Best value • Save ~${yearlySavingsPercent}%` : 'Best value'}
                         </Caption>
-                      </View>
+                        </View>
                     )}
                   </View>
-                  <Caption style={{ color: theme.colors.textSecondary, marginTop: 2 }}>
-                    {selectedPackage.product.priceString}
+                  <Caption style={{ color: theme.colors.textSecondary, marginTop: 4 }}>
+                    {getPackageLabel(selectedPackage)}
                   </Caption>
+                  <Text style={[styles.billedPrice, { color: theme.colors.text }]}>
+                    {selectedPackage.product.priceString}
+                  </Text>
                   {yearlyPackage &&
                     selectedPackage.identifier === yearlyPackage.identifier &&
                     yearlyMonthlyEquivalent && (
-                      <Caption style={{ color: theme.colors.textSecondary, marginTop: 4 }}>
+                      <Caption style={{ color: theme.colors.textSecondary, marginTop: 2 }}>
                         {`≈ $${yearlyMonthlyEquivalent.toFixed(2)} / month (billed yearly)`}
                       </Caption>
                     )}
@@ -636,6 +677,22 @@ export function SubscriptionScreen() {
             <Caption style={{ textAlign: 'center', marginTop: 10, color: theme.colors.textSecondary, lineHeight: 18 }}>
               Cancel anytime. Apple manages billing.
             </Caption>
+          )}
+          {selectedPackage && (
+            <View style={styles.finePrintSection}>
+              <Caption style={{ textAlign: 'center', color: theme.colors.textSecondary }}>
+                Subscription auto-renews until canceled.
+              </Caption>
+              <View style={styles.legalLinksRow}>
+                <Pressable onPress={() => void handleOpenLegal(TERMS_URL)}>
+                  <Caption style={[styles.legalLink, { color: theme.colors.primary }]}>Terms of Use</Caption>
+                </Pressable>
+                <Caption style={{ color: theme.colors.textSecondary }}>·</Caption>
+                <Pressable onPress={() => void handleOpenLegal(PRIVACY_URL)}>
+                  <Caption style={[styles.legalLink, { color: theme.colors.primary }]}>Privacy Policy</Caption>
+                </Pressable>
+              </View>
+            </View>
           )}
         </>
       )}
@@ -704,5 +761,23 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'stretch',
     gap: 8,
+  },
+  billedPrice: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginTop: 8,
+  },
+  finePrintSection: {
+    marginTop: 12,
+  },
+  legalLinksRow: {
+    marginTop: 6,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  legalLink: {
+    textDecorationLine: 'underline',
   },
 });
